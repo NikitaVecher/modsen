@@ -23,6 +23,5 @@ extension Btn {
         default:
             return .none
         }
-        
     }
 }
