@@ -1,0 +1,12 @@
+# Игнорировать системные файлы
+.DS_Store
+
+# Игнорировать временные файлы
+*.tmp
+*.log
+
+# Игнорировать директорию build
+build/
+
+# Игнорировать файл UserInterfaceState.xcuserstate
+calc/calc.xcodeproj/project.xcworkspace/xcuserdata/nikita.xcuserdatad/UserInterfaceState.xcuserstate
