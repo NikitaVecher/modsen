@@ -13,6 +13,8 @@
 		1103E9D62C32F82E004A92E3 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1103E9D52C32F82E004A92E3 /* Preview Assets.xcassets */; };
 		116566EC2C3EE5E700247384 /* CreditCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 116566EB2C3EE5E700247384 /* CreditCard.swift */; };
 		116566EE2C3EE6DA00247384 /* Transaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 116566ED2C3EE6DA00247384 /* Transaction.swift */; };
+		11675E742C444DBD008B0BB7 /* extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11675E732C444DBD008B0BB7 /* extension.swift */; };
+		11E608802C42B807000A05E8 /* ContentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E6087F2C42B807000A05E8 /* ContentViewModel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -23,6 +25,8 @@
 		1103E9D52C32F82E004A92E3 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		116566EB2C3EE5E700247384 /* CreditCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreditCard.swift; sourceTree = "<group>"; };
 		116566ED2C3EE6DA00247384 /* Transaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Transaction.swift; sourceTree = "<group>"; };
+		11675E732C444DBD008B0BB7 /* extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = extension.swift; sourceTree = "<group>"; };
+		11E6087F2C42B807000A05E8 /* ContentViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentViewModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -55,6 +59,7 @@
 		1103E9CD2C32F82D004A92E3 /* BankApp */ = {
 			isa = PBXGroup;
 			children = (
+				11675E722C444DA0008B0BB7 /* Extension */,
 				116566F22C3EE7AF00247384 /* View */,
 				116566EF2C3EE70200247384 /* ViewModel */,
 				116566EA2C3EE50F00247384 /* Model */,
@@ -85,6 +90,7 @@
 		116566EF2C3EE70200247384 /* ViewModel */ = {
 			isa = PBXGroup;
 			children = (
+				11E6087F2C42B807000A05E8 /* ContentViewModel.swift */,
 			);
 			path = ViewModel;
 			sourceTree = "<group>";
@@ -95,6 +101,14 @@
 				1103E9D02C32F82D004A92E3 /* ContentView.swift */,
 			);
 			path = View;
+			sourceTree = "<group>";
+		};
+		11675E722C444DA0008B0BB7 /* Extension */ = {
+			isa = PBXGroup;
+			children = (
+				11675E732C444DBD008B0BB7 /* extension.swift */,
+			);
+			path = Extension;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -170,7 +184,9 @@
 				116566EC2C3EE5E700247384 /* CreditCard.swift in Sources */,
 				1103E9D12C32F82D004A92E3 /* ContentView.swift in Sources */,
 				116566EE2C3EE6DA00247384 /* Transaction.swift in Sources */,
+				11675E742C444DBD008B0BB7 /* extension.swift in Sources */,
 				1103E9CF2C32F82D004A92E3 /* BankAppApp.swift in Sources */,
+				11E608802C42B807000A05E8 /* ContentViewModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

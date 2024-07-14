@@ -3,7 +3,8 @@ import SwiftUI
 struct ContentView: View {
     @State private var showTransactionAllView = false
     @State private var transactionLimit: Int? = 4
-    
+    @State private var selectedCardIndex: Int? = 0
+
     var body: some View {
         NavigationView {
             ZStack {
@@ -21,7 +22,7 @@ struct ContentView: View {
                     }
                     .padding(.top, 20)
                     
-                    CreditCardView()
+                    CreditCardView(selectedCardIndex: $selectedCardIndex)
                         .padding(.horizontal, 16)
                     
                     HStack {
@@ -46,17 +47,19 @@ struct ContentView: View {
                         }
                     }
                     
-                    if let limit = transactionLimit {
-                        TransactionsView(transactionLimit: limit).padding(.horizontal, 16)
+                    if let limit = transactionLimit, let index = selectedCardIndex {
+                        TransactionsView(transactionLimit: limit, transactions: exampleCreditCards[index].transactions)
+                            .padding(.horizontal, 16)
                     } else {
-                        TransactionsView().padding(.horizontal, 16)
+                        TransactionsView(transactions: [])
+                            .padding(.horizontal, 16)
                     }
                     
                     Spacer()
                 }
                 
                 if showTransactionAllView {
-                    TransactionAllView(showTransactionAllView: $showTransactionAllView)
+                    TransactionAllView(showTransactionAllView: $showTransactionAllView, selectedCardIndex: $selectedCardIndex)
                         .transition(.move(edge: .trailing))
                 }
             }
@@ -65,11 +68,10 @@ struct ContentView: View {
     }
 }
 
-
 struct CreditCardView: View {
     @State private var showSheet = false
-    @State private var selectedCardIndex: Int? = 0
-    private let creditCards = onCreditCards
+    @Binding var selectedCardIndex: Int?
+    private let creditCards = exampleCreditCards
     
     var body: some View {
         VStack {
@@ -128,17 +130,17 @@ struct CreditCardView: View {
     }
 }
 
-
-
-
 struct CreditCardDetailView: View {
-    var creditCards: [CreditCard] = onCreditCards
+    @State private var creditCards: [CreditCard] = exampleCreditCards
     @Binding var selectedCardIndex: Int?
     @Binding var showSheet: Bool
+    @State private var tempSelectedCardIndex: Int? = nil
+    @State private var showAlert: Bool = false
+    @State private var indexToDelete: Int? = nil
     
     var body: some View {
         VStack() {
-            HStack {
+            HStack(alignment: .center) {
                 Text("Select the account")
                     .font(.title)
                     .fontWeight(.bold)
@@ -147,6 +149,12 @@ struct CreditCardDetailView: View {
                     .padding(.top, 33)
                 
                 Spacer()
+//                
+//                Text("Edit")
+//                    .font(.callout)
+//                    .foregroundColor(.white)
+//                    .padding(.top, 33)
+//                    .padding(.trailing, 16.0)
             }
             
             Spacer().frame(height: 32)
@@ -181,31 +189,35 @@ struct CreditCardDetailView: View {
                             .padding(.leading, 8)
                             
                             Spacer()
+                            
+//                            Button(action: {
+//                                indexToDelete = index
+//                                showAlert = true
+//                            }) {
+//                                Image(systemName: "trash")
+//                                    .foregroundColor(.red)
+//                                    .padding(.trailing, 16.0)
+//                            }
                         }
                         .padding(.vertical, 16)
-                        .background(selectedCardIndex == index ? Color("TapCardColor") : Color.clear)
+                        .background(tempSelectedCardIndex == index ? Color("TapCardColor") : Color.clear)
                         .background(Color.gray.opacity(0.2))
                         .cornerRadius(13)
                         .onTapGesture {
-                            selectedCardIndex = index
+                            tempSelectedCardIndex = index
                         }
                     }
                 }
                 .padding(.horizontal, 16)
-                
-                
             }
             
             Divider()
                 .background(Color.white.opacity(0.3))
                 .padding(.all, 16)
             
-            
             Button(action: {
-                if let index = selectedCardIndex {
-                    
-                    print("Selected card: \(creditCards[index])")
-                    
+                if let index = tempSelectedCardIndex {
+                    selectedCardIndex = index
                     showSheet = false
                 }
             }) {
@@ -224,9 +236,27 @@ struct CreditCardDetailView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.black)
         .edgesIgnoringSafeArea(.all)
+        .onAppear {
+            tempSelectedCardIndex = selectedCardIndex
+        }
+//        .alert(isPresented: $showAlert) {
+//            Alert(
+//                title: Text("Delete Card"),
+//                message: Text("Are you sure you want to delete this card?"),
+//                primaryButton: .destructive(Text("Delete")) {
+//                    if let index = indexToDelete {
+//                        creditCards.remove(at: index)
+//                        
+//                    }
+//                    indexToDelete = nil
+//                },
+//                secondaryButton: .cancel {
+//                    indexToDelete = nil
+//                }
+//            )
+//        }
     }
 }
-
 
 struct TransactionDetailView: View {
     var transaction: Transaction
@@ -366,9 +396,6 @@ struct TransactionDetailView: View {
     }
 }
 
-
-//view Transactions
-
 struct TransactionRowView: View {
     var transaction: Transaction
     @State private var showTransactionDetail = false
@@ -436,13 +463,9 @@ struct TransactionRowView: View {
     }
 }
 
-
-
-
-// View for transactions list
 struct TransactionsView: View {
     var transactionLimit: Int?
-    var transactions: [Transaction] = onTransaction
+    var transactions: [Transaction]
     
     var sortedTransactions: [Transaction] {
         transactions.sorted { $0.transactionDate > $1.transactionDate }
@@ -465,17 +488,17 @@ struct TransactionsView: View {
     }
 }
 
-
 struct FilterSheetView: View {
+    @Binding var isPresented: Bool
     @State private var startDateSelected = false
-        @State private var endDateSelected = false
-        @State private var submitButtonPressed = false
-        @State private var showStartDatePicker = false
-        @State private var showEndDatePicker = false
-        @State private var startDate = Date()
-        @State private var endDate = Date()
+    @State private var endDateSelected = false
+    @State private var submitButtonPressed = false
+    @State private var showStartDatePicker = false
+    @State private var showEndDatePicker = false
+    @State private var startDate = Date()
+    @State private var endDate = Date()
 
-        var onSubmit: (Date, Date) -> Void
+    var onSubmit: (Date, Date) -> Void
 
     var body: some View {
         VStack {
@@ -486,18 +509,18 @@ struct FilterSheetView: View {
                     .foregroundColor(.white)
                     .padding(.leading, 16)
                     .padding(.top, 33)
-                
+
                 Spacer()
             }
-            
+
             Spacer().frame(height: 32)
-            
+
             VStack(alignment: .leading, spacing: 8) {
                 Text("Start date")
                     .font(.system(size: 17))
                     .foregroundColor(.white)
                     .padding(.bottom, 5.0)
-                
+
                 HStack {
                     Text(startDateSelected ? "\(startDate, formatter: dateFormatter)" : "Select start date")
                         .font(.system(size: 15))
@@ -506,7 +529,7 @@ struct FilterSheetView: View {
                         .padding(.vertical, 14)
                         .padding(.leading, 12)
                         .frame(maxWidth: .infinity, alignment: .leading)
-                    
+
                     Image(systemName: "calendar")
                         .foregroundColor(.white)
                         .padding(.trailing, 12)
@@ -524,7 +547,7 @@ struct FilterSheetView: View {
                             .datePickerStyle(GraphicalDatePickerStyle())
                             .labelsHidden()
                             .padding()
-                        
+
                         Button("Done") {
                             startDateSelected = true
                             showStartDatePicker = false
@@ -532,13 +555,13 @@ struct FilterSheetView: View {
                         .padding()
                     }
                 }
-                
+
                 Text("End date")
                     .font(.system(size: 17))
                     .foregroundColor(.white)
                     .padding(.bottom, 5.0)
                     .padding(.top, 8.0)
-                
+
                 HStack {
                     Text(endDateSelected ? "\(endDate, formatter: dateFormatter)" : "Select end date")
                         .font(.system(size: 15))
@@ -547,7 +570,7 @@ struct FilterSheetView: View {
                         .padding(.vertical, 14)
                         .padding(.leading, 12)
                         .frame(maxWidth: .infinity, alignment: .leading)
-                    
+
                     Image(systemName: "calendar")
                         .foregroundColor(.white)
                         .padding(.trailing, 12)
@@ -565,7 +588,7 @@ struct FilterSheetView: View {
                             .datePickerStyle(GraphicalDatePickerStyle())
                             .labelsHidden()
                             .padding()
-                        
+
                         Button("Done") {
                             endDateSelected = true
                             showEndDatePicker = false
@@ -573,21 +596,22 @@ struct FilterSheetView: View {
                         .padding()
                     }
                 }
-                
+
             }
             .padding(.horizontal, 16.0)
-            
+
             Spacer().frame(height: 24)
-            
+
             Divider()
                 .background(Color.white.opacity(0.8))
-            
+
             Spacer().frame(height: 20)
-            
+
             Button(action: {
                 submitButtonPressed = true
                 if startDateSelected && endDateSelected {
                     onSubmit(startDate, endDate)
+                    isPresented = false // Dismiss the sheet after submission
                 }
             }) {
                 Text("Submit")
@@ -601,7 +625,7 @@ struct FilterSheetView: View {
                     .padding(.horizontal, 16)
             }
             .padding(.bottom, 35.0)
-            
+
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.black)
@@ -614,39 +638,45 @@ struct FilterSheetView: View {
     }
 }
 
-
 struct TransactionAllView: View {
     @Binding var showTransactionAllView: Bool
+    @Binding var selectedCardIndex: Int?
     @State private var transactionLimit: Int?
     @State private var showFilterSheet = false
-    @State private var filteredTransactions = onTransaction
+    @State private var filteredTransactions: [Transaction] = []
     @State private var startDate = Date()
     @State private var endDate = Date()
 
+    init(showTransactionAllView: Binding<Bool>, selectedCardIndex: Binding<Int?>) {
+        self._showTransactionAllView = showTransactionAllView
+        self._selectedCardIndex = selectedCardIndex
+        self._filteredTransactions = State(initialValue: exampleCreditCards[selectedCardIndex.wrappedValue ?? 0].transactions)
+    }
+
     var body: some View {
         ZStack {
-            Color.black.background().ignoresSafeArea(.all)
-            
+            Color.black.edgesIgnoringSafeArea(.all)
+
             VStack {
                 HStack {
                     Image(systemName: "chevron.left")
                         .foregroundColor(.white)
                         .padding(.trailing, 16)
                         .onTapGesture {
-                            withAnimation(.easeInOut){
+                            withAnimation(.easeInOut) {
                                 showTransactionAllView = false
                             }
                         }
-                    
+
                     Spacer()
-                    
-                    Text("All Transaction")
+
+                    Text("All Transactions")
                         .fontWeight(.heavy)
                         .foregroundColor(.white)
                         .font(.system(size: 17))
-                    
+
                     Spacer()
-                    
+
                     ZStack {
                         Circle()
                             .stroke(Color.white, lineWidth: 3)
@@ -655,7 +685,7 @@ struct TransactionAllView: View {
                             .onTapGesture {
                                 showFilterSheet.toggle()
                             }
-                        
+
                         Image(systemName: "ellipsis")
                             .resizable()
                             .scaledToFit()
@@ -663,79 +693,56 @@ struct TransactionAllView: View {
                             .font(.system(size: 17, weight: .bold))
                             .foregroundColor(.white)
                     }
-                }.padding(.horizontal, 16.0)
-                
+                }
+                .padding(.horizontal, 16.0)
+
                 ScrollView {
                     if let limit = transactionLimit {
-                        TransactionsView(transactionLimit: limit).padding(.horizontal, 16)
+                        TransactionsView(transactionLimit: limit, transactions: filteredTransactions)
+                            .padding(.horizontal, 16)
                     } else {
-                        TransactionsView(transactions: filteredTransactions).padding(.horizontal, 16)
+                        TransactionsView(transactions: filteredTransactions)
+                            .padding(.horizontal, 16)
                     }
-                }.padding(.top)
-                
+                }
+                .padding(.top)
+
                 Spacer()
             }
         }
+        .onChange(of: selectedCardIndex) { newIndex, _ in
+            if let index = newIndex {
+                filteredTransactions = exampleCreditCards[index].transactions
+            }
+        }
         .sheet(isPresented: $showFilterSheet) {
-            FilterSheetView { start, end in
+            FilterSheetView(isPresented: $showFilterSheet) { start, end in
                 startDate = start
                 endDate = end
-                filterTransactions()
-                showFilterSheet = false
+                filteredTransactions = filterTransactions(startDate: start, endDate: end)
             }
             .presentationDetents([.height(400)])
             .presentationDragIndicator(.visible)
         }
     }
 
-    private func filterTransactions() {
-        let calendar = Calendar.current
-        filteredTransactions = onTransaction.filter { transaction in
-            if let transactionDate = calendar.date(from: DateComponents(year: Int(transaction.transactionDate.suffix(4)), month: Int(transaction.transactionDate.dropFirst(3).prefix(2)), day: Int(transaction.transactionDate.prefix(2)))) {
-                return transactionDate >= startDate && transactionDate <= endDate
+    private func filterTransactions(startDate: Date, endDate: Date) -> [Transaction] {
+        // Filter transactions based on dates
+        let transactions = exampleCreditCards[selectedCardIndex ?? 0].transactions
+        return transactions.filter { transaction in
+            if let transactionDate = DateFormatter.transactionDateFormatter.date(from: transaction.transactionDate),
+               transactionDate >= startDate.startOfDay() && transactionDate <= endDate.endOfDay() {
+                return true
             }
             return false
         }
     }
 }
 
-private let onCreditCards = [CreditCard(accountDescription: "My first account", accountNumber: "91212192291221", maskedCardNumber: "•••• 1234"), CreditCard(accountDescription: "For travelling", accountNumber: "91212192291221", maskedCardNumber: "•••• 1234"), CreditCard(accountDescription: "Saving Account ", accountNumber: "91212192291221", maskedCardNumber: "•••• 1234")]
-
-private let onTransaction = [
-    Transaction(companyName: "OOO “Company”", transactionDate: "01.06.2024", transactionStatus: "Executed", transactionAmount: "$10.09", transactionNumber: "1"),
-    Transaction(companyName: "OOO “Company2”", transactionDate: "02.06.2024", transactionStatus: "Declined", transactionAmount: "$10.09", transactionNumber: "2"),
-    Transaction(companyName: "OOO “Company”", transactionDate: "06.06.2024", transactionStatus: "In progress", transactionAmount: "$10.09", transactionNumber: "3"),
-    Transaction(companyName: "OOO “Company”", transactionDate: "01.06.2024", transactionStatus: "Executed", transactionAmount: "$10.09", transactionNumber: "4"),
-    Transaction(companyName: "OOO “Company2”", transactionDate: "02.06.2024", transactionStatus: "Declined", transactionAmount: "$10.09", transactionNumber: "5"),
-    Transaction(companyName: "OOO “Company2”", transactionDate: "02.06.2024", transactionStatus: "Declined", transactionAmount: "$10.09", transactionNumber: "6"),
-    Transaction(companyName: "OOO “Company2”", transactionDate: "02.06.2024", transactionStatus: "Declined", transactionAmount: "$10.09", transactionNumber: "7"),
-    Transaction(companyName: "OOO “Company2”", transactionDate: "02.06.2024", transactionStatus: "Declined", transactionAmount: "$10.09", transactionNumber: "8"),
-]
-
-
-
-//model for creditCard
-struct CreditCard: Identifiable {
-    let id = UUID()
-    var accountDescription: String
-    var accountNumber: String
-    var maskedCardNumber: String
-}
-
-struct Transaction: Identifiable {
-    let id = UUID()
-    let companyName: String
-    let transactionDate: String
-    let transactionStatus: String
-    let transactionAmount: String
-    let transactionNumber: String
-}
 
 #Preview {
     ContentView()
 }
-
-
 
 
 
